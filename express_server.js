@@ -1,17 +1,31 @@
+const { response } = require("express");
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs"); //set ejs as the view engine
 
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
+//bodyParser needs to come before all routes to convert request body into readable form
+
+const generateRandomString = function() {
+  return Math.random().toString(36).substring(2, 6);
+};
+
 //add new route handler for "/urls" and use res.rener() to pass the URL data to our template
+//routes should be orderd from most specific to least specific
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL /* What goes here? */ };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]/* What goes here? */ };
   res.render("urls_show", templateVars);
 });
 
@@ -34,6 +48,11 @@ app.get("/hello", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
+});
+
+app.post("/urls", (req, res) => {
+  console.log(req.body);  // Log the POST request body to the console
+  res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
 
