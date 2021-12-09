@@ -4,6 +4,17 @@ const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs"); //set ejs as the view engine
 
+//add new route handler for "/urls" and use res.rener() to pass the URL data to our template
+app.get("/urls", (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  res.render("urls_index", templateVars);
+});
+
+app.get("/urls/:shortURL", (req, res) => {
+  const templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL /* What goes here? */ };
+  res.render("urls_show", templateVars);
+});
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -24,3 +35,5 @@ app.get("/hello", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
