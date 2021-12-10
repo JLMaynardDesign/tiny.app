@@ -2,31 +2,65 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const morgan = require('morgan');
-const app = express();
-const PORT = 8080;
 const cookieParser = require('cookie-parser');
 
-app.set("view engine", "ejs");
+//dummy data
+const users = {
+  123: {
+    id: '123',
+    email: 'scully@xfiles.com',
+    pasword: 'abcd'
+  }
+};
+
+const findUserByEmail = (email) => {
+  for (const userId in users) {
+    const user = users[userId];
+    if (user.email === email) {
+      return user;
+    }
+  }
+  return null;
+};
+
+const app = express();
+const PORT = 8080;
+
+//middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieParser()); //allows us to utilize cookies
 
+app.set("view engine", "ejs");
+
+//function
 const generateRandomString = function () {
   return Math.random().toString(36).substring(2, 8);
 };
+//object
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-
+//methods
 app.get("/urls", (req, res) => {
+  const userId = req.cookies.user_id;
+
+  if (!userId) {
+    return res.status(401).send("please register");
+  }
+
+  const user = users[userId];
+
   const templateVars = { urls: urlDatabase,
-    username: req.cookies.username };
+    email: user.email,
+    username: userId };
+
   res.render("urls_index", templateVars);
 });
 
@@ -75,9 +109,21 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-//login
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!email || !password) {
+    return res.status(400).send("email and password cannot be blank");  //avoid this level of specificity in error message outside of development for security reasons
+  }
+  const user = findUserByEmail(email);
+  console.log('user', user);
+  if (!user) {
+    return res.status(400).send("a user with specified email does not exist");
+  }
+  if (user.password !== password) {
+    return res.status(400).send('password does not match');
+  }
+  res.cookie('user_id', user.id);
   res.redirect('/urls');
 });
 
