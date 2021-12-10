@@ -88,6 +88,13 @@ app.get("/login", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+app.post("/logout", (req, res) => {
+  //res.clearCookie('user_id');
+  //delete req.session['user_id']
+  req.session['user_id'] = null;
+  res.redirect('/urls');
+});
+
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
   const newLongURL = req.body.longURL;
