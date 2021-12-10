@@ -1,4 +1,5 @@
 <header>
+
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
     <a class="navbar-brand" href="/urls">TinyApp</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -8,26 +9,28 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        <form method="POST" action="/login">
+      <!---  <form method="POST" action="/login">
         <input type="text" name="username" placeholder="username">
         <button type="submit" class="btn btn-primary">sign in</button>
-        </form>
+        </form> --> 
 <!--Login form logic-->
         <div class="form-inline" style="margin-left: 500px">
-          <$ if (username) {%>
+          <% if(username){ %>
             <form method="POST" action="/logout">
               <a class="nav-item nav-link inline">
-                Logged in as <%=user %></a>
+                Logged in as <%= username %></a>
                 <button type="submit" class="btn btn-outline-primary">Logout</button>
             </form>
-            <%} else {%>
+            <% } else{ %>
             <div style="margin-left: 100px">
-            <form method="POST" action="/loginbtn">
-              <a class="nav-item nav-link" href="/register">Register</a>
-              <a class="nav-item nav-link" href="/login">Login</a>
+            <form method="POST" action="/login">
+            <!---  <a class="nav-item nav-link" href="/register">Register</a>
+              <a class="nav-item nav-link" href="/login">Login</a> -->
+              <input type="text" name="username" placeholder="username">
+        <button type="submit" class="btn btn-primary">sign in</button>
             </form>
             </div>
-            <%}%>
+            <% } %>
         </div>
       </div>
     </div>
