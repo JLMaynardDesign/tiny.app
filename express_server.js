@@ -78,7 +78,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 //login
 app.post("/login", (req, res) => {
   res.cookie('username', req.body.username);
-  res.redirect('urls');
+  res.redirect('/urls');
+});
+
+app.get("/login", (req, res) => {
+  const templateVars = {
+    username: req.cookies.username
+  };
+  res.render("urls_index", templateVars);
 });
 
 app.post("/urls/:id", (req, res) => {
