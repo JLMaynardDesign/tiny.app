@@ -4,22 +4,20 @@ const bodyParser = require("body-parser");
 const morgan = require('morgan');
 const app = express();
 const PORT = 8080;
+const cookieParser = require('cookie-parser');
 
 app.set("view engine", "ejs");
-
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
-
 app.use(morgan('dev'));
-
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 const generateRandomString = function () {
   return Math.random().toString(36).substring(2, 8);
 };
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -27,7 +25,8 @@ const urlDatabase = {
 
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase,
+    username: req.cookies.username };
   res.render("urls_index", templateVars);
 });
 
@@ -36,7 +35,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username
   };
   res.render("urls_show", templateVars);
 });
@@ -74,6 +73,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[deleteURL];
   //console.log(res.body);
   res.redirect("/urls");
+});
+
+//login
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect('urls');
 });
 
 app.post("/urls/:id", (req, res) => {
