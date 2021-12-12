@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<html>
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -13,7 +11,7 @@
 </head>
 
 <body>
-  <%- include('partials/_header') %>
+  <header><%- include('partials/_header') %></header>
     <main style="margin: 1em;">
       <h3>My URLs</h3>
       <table class="table">
@@ -26,7 +24,7 @@
           </tr>
         </thead>
         <tbody>
-          <% for(let url in urls) { %>
+          <%- include('partials/_header', {user: user}) %>
             <tr>
               <td>
                 <%= url %>
@@ -60,5 +58,4 @@
       integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
       crossorigin="anonymous"></script>
 </body>
-
 </html>
