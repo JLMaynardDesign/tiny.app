@@ -1,31 +1,33 @@
 //modules
 const express = require("express");
 const bodyParser = require("body-parser");
-const morgan = require('morgan');
-const cookieParser = require('cookie-parser');
+//const morgan = require('morgan');
+//const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
+const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080;
 
 //middleware
-app.use(morgan('dev'));
+//app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser()); //allows us to utilize cookies
+//app.use(cookieParser()); //allows us to utilize cookies
+
+app.set("view engine", "ejs");
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }));
-app.set("view engine", "ejs");
 
 //object
 let urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.youtube.com",
-    userID: "bx782a",
+    userID: "xyz123",
   },
   i4BoYr: {
     longURL: "https://www.google.ca",
-    userID: "bx782a",
+    userID: "xyz124",
   },
 };
 
@@ -34,17 +36,18 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "1234",
+    password: "123456",
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: "953456",
   },
 };
 
 //helper function:
-const findUserByEmail = (email, database) => {
+//getUserByEmail function
+const findUserByEmail = (email, database) => {  
   for (const property in database) {
     const user = database[property];
     if (user.email === email) {
@@ -54,9 +57,22 @@ const findUserByEmail = (email, database) => {
   return null;
 };
 
-//helper function
 const generateRandomString = function () {
   return Math.random().toString(36).substring(2, 8);
+};
+
+const urlsForUser = function (id) {
+  let userURLList = {};
+  for (const url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      userURLList[url] = {};
+      userURLList[url] = {
+        userID: urlDatabase[url].userID,
+        longURL: urlDatabase[url].longURL,
+      };
+    }
+  }
+  return userURLList;
 };
 
 //
@@ -68,12 +84,12 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
-
+  const templateVars = { user: user, urls: urlsForUser(userID)};
   if (!user) {
-    return res.status(401).send("please register");
+    res.redirect("/login");
   }
 
-  const templateVars = {user: user, id: users.id, email: users.email};
+  // eslint-disable-next-line no-undef
   res.render("urls_index", templateVars);
 });
 
@@ -106,6 +122,10 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  const userID = req.session.user_id;
+  const user = users[userID];
+  const userOwnURLs = urlsForUser(userID);
+
   const templateVars = {
     shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.session.user_id
   };
@@ -113,14 +133,32 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  const userID = req.session.user_id;
+  const user = users[userID];
+
+  if (!urlDatabase[req.params.shortURL]) {
+    return res.status(403).send('URL does not exist');
+  } else {
+    const longURL = urlDatabase[req.params.shortURL];
+    res.redirect(longURL);
+  }
 });
 
 
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.newLongURL;
-  res.redirect(`/urls/${req.params.shortURL}`);
+  const userID = req.session.user_id;
+  const user = users[userID];
+  const userOwnURLs = urlsForUser(userID);
+  const templateVars = { user };
+
+  if (!user) {
+    return res.status(403).send("please log-in before attempting to edit");
+  } else if (!userOwnURLs) {
+    return res.status(403).send("either the list does not belogn to you, or you are entering the proper URL");
+  } else {
+    urlDatabase[req.params.shortURL] = req.body.longURL;
+    res.redirect('/urls');
+  }
 });
 
 
@@ -133,13 +171,25 @@ app.get("/hello", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const deleteURL = req.params.shortURL;
-  delete urlDatabase[deleteURL];
-  //console.log(res.body);
-  res.redirect("/urls");
+  const userID = req.session.user_id;
+  const user = users[userID];
+  const userOwnURLs = urlsForUser(userID);
+  const templateVars = { user };
+
+  if (!user) {
+    return res.status(403).send("please log-in before attempting to edit");
+  } else if (!userOwnURLs) {
+    return res.status(403).send("either the list does not belogn to you, or you are entering the proper URL");
+  } else {
+    const deleteURL = req.params.shortURL;
+    delete urlDatabase[deleteURL];
+    //console.log(res.body);
+    res.redirect("/urls");
+  }
 });
 //login
 app.get("/login", (req, res) => {
+  const templateVars = { user: req.session.user_id };
   const userID = req.session.user_id;
   const user = users[userID];
   const templateVars = { user };
@@ -154,13 +204,15 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const user = findUserByEmail(req.body.email, users);
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
   const templateVars = { user };
 
   if (!user) {
     return res.status(403).send("a user with specified email does not exist");
-  } else if (user.password !== password) {
+  } else if (user && bcrypt.compareSync(user.password, hashedPassword)) {
     return res.status(403).send('password does not match');
-  } else if (user) {
+  } else {
     req.session.user_id = user.id;
     res.redirect('/urls');
   }
@@ -194,11 +246,13 @@ app.post("/register", (req, res) => {
 
   const userID = generateRandomString();
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  const email = req.body.email;
 
   users[userID] = {
     id: userID,
-    email: req.body.email,
-    password: password,
+    email: email,
+    password: hashedPassword,
   };
 
   // eslint-disable-next-line camelcase
