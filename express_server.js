@@ -149,7 +149,7 @@ app.get("/login", (req, res) => {
   let templateVars = {
     user: users[req.session.user_id],
   };
-  res.render("/login", templateVars);
+  res.render("login", templateVars);
 });
 
 app.post("/register", (req, res) => {
