@@ -7,18 +7,6 @@ const cookieSession = require('cookie-session');
 const app = express();
 const PORT = 8080;
 
-//object
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW",
-  },
-};
-
 //middleware
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -29,6 +17,17 @@ app.use(cookieSession({
 }));
 app.set("view engine", "ejs");
 
+//object
+const urlDatabase = {
+  b6UTxQ: {
+    longURL: "https://www.youtube.com",
+    userID: "bx782a",
+  },
+  i4BoYr: {
+    longURL: "https://www.google.ca",
+    userID: "bx782a",
+  },
+};
 
 //global object
 const users = {
@@ -43,10 +42,11 @@ const users = {
     password: "dishwasher-funk",
   },
 };
+
 //helper function:
-const findUserByEmail = (email) => {
-  for (const id in users) {
-    const user = users[id];
+const findUserByEmail = (email, database) => {
+  for (const property in database) {
+    const user = database[property];
     if (user.email === email) {
       return user;
     }
@@ -91,7 +91,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
-    shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.users.id
+    shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.session.user_id
   };
   res.render("urls_show", templateVars);
 });
@@ -127,29 +127,47 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   //console.log(res.body);
   res.redirect("/urls");
 });
+//login
+app.get("/login", (req, res) => {
+  const userID = req.session.user_id;
+  const user = users[userID];
+  const templateVars = { user };
 
-app.post("/login", (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  if (!email || !password) {
-    return res.status(400).send("email and password cannot be blank");  //avoid this level of specificity in error message outside of development for security reasons
+  if (user) {
+    res.redirect("/urls");
   }
-  const user = findUserByEmail(email);
-  console.log('user', user);
-  if (!user) {
-    return res.status(400).send("a user with specified email does not exist");
-  }
-  if (user.password !== password) {
-    return res.status(400).send('password does not match');
-  }
-  res.redirect('/urls');
+
+  res.render("login", templateVars);
 });
 
-app.get("/login", (req, res) => {
-  let templateVars = {
-    user: users[req.session.user_id],
-  };
-  res.render("login", templateVars);
+app.post("/login", (req, res) => {
+  const user = findUserByEmail(req.body.email, users);
+  const email = req.body.email;
+  const password = req.body.password;
+  const templateVars = { user };
+
+  if (!user) {
+    return res.status(403).send("a user with specified email does not exist");
+  } else if (user.password !== password) {
+    return res.status(403).send('password does not match');
+  } else if (user) {
+    req.session.user_id = user.id;
+    res.redirect('/urls');
+  }
+});
+
+
+//registration
+app.get("/register", (req, res) => {
+  const userID = req.session.user_id;
+  const user = users[userID];
+  const templateVars = { user };
+
+  if (user) {
+    res.redirect("/urls");
+  }
+  
+  res.render("register", templateVars);
 });
 
 app.post("/register", (req, res) => {
@@ -160,6 +178,7 @@ app.post("/register", (req, res) => {
   }
 
   const user = findUserByEmail(email);
+  const templateVars = { user };
 
   if (user) {
     return res.status(400).send("the user already exists with the specified email address");
@@ -170,16 +189,15 @@ app.post("/register", (req, res) => {
   users[userID] = {
     id: userID,
     email: req.body.email,
-    password: password
+    password: password,
   };
-
-  console.log('users', users);
 
   // eslint-disable-next-line camelcase
   req.session.user_id = userID;
   res.redirect('/urls');
 });
 
+//logout
 app.post("/logout", (req, res) => {
   delete req.session.user_id;
   req.session = null;
