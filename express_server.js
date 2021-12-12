@@ -44,11 +44,11 @@ const users = {
 //getUserByEmail function
 const { findUserByEmail } = require("./helpers");
 
-const generateRandomString = function () {
+const generateRandomString = function() {
   return Math.random().toString(36).substring(2, 8);
 };
 
-const urlsForUser = function (id) {
+const urlsForUser = function(id) {
   let userURLList = {};
   for (const url in urlDatabase) {
     if (urlDatabase[url].userID === id) {
@@ -72,6 +72,7 @@ app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
   const templateVars = { user: user, urls: urlsForUser(userID)};
+
   if (!user) {
     res.redirect("/login");
   }
@@ -85,7 +86,7 @@ app.post("/urls", (req, res) => {
   const user = users[users];
 
   if (!user) {
-    res.redirect("/login");
+    res.status(403).send("please register or log in");
   }
 
   let shortURL = generateRandomString();
@@ -115,13 +116,13 @@ app.get("/urls/:shortURL", (req, res) => {
 
   const templateVars = {
     user: user,
-    shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL], 
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.longURL],
     username: req.session.user_id
   };
 
   if (!userOwnURLs[req.params.shortURL]) {
-  res.status(403).send("either the list does not belogn to you, or you are entering the proper URL");
+    res.status(403).send("either the list does not belogn to you, or you are entering the proper URL");
   }
 
   res.render("urls_show", templateVars);
@@ -130,6 +131,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
+  const templateVars = { user };
 
   if (!urlDatabase[req.params.shortURL]) {
     return res.status(403).send('URL does not exist');
@@ -189,7 +191,6 @@ app.post("/login", (req, res) => {
   const user = findUserByEmail(req.body.email, users);
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
-
   const templateVars = { user };
 
   if (!user) {
@@ -197,6 +198,7 @@ app.post("/login", (req, res) => {
   } else if (user && bcrypt.compareSync(user.password, hashedPassword)) {
     return res.status(403).send('password does not match');
   } else {
+    // eslint-disable-next-line camelcase
     req.session.user_id = user.id;
     res.redirect('/urls');
   }
@@ -223,7 +225,6 @@ app.post("/register", (req, res) => {
 
   const user = findUserByEmail(req.body.email, users);
   const templateVars = { user };
-
   if (user) {
     return res.status(400).send("the user already exists with the specified email address");
   }
@@ -247,7 +248,7 @@ app.post("/register", (req, res) => {
 //logout
 app.post("/logout", (req, res) => {
   delete req.session.user_id;
-  req.session = null;
+  //req.session = null;
   res.redirect('/urls');
 });
 

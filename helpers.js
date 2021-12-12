@@ -1,4 +1,4 @@
-const findUserByEmail = (email, database) => {  
+const findUserByEmail = (email, database) => {
   for (const property in database) {
     const user = database[property];
     if (user.email === email) {
@@ -8,4 +8,4 @@ const findUserByEmail = (email, database) => {
   return null;
 };
 
-module.exports = findUserByEmail;
+module.exports = {findUserByEmail};
