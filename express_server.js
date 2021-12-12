@@ -3,31 +3,46 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-
+const cookieSession = require('cookie-session');
 const app = express();
 const PORT = 8080;
 
+//object
+const urlDatabase = {
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
+};
+
 //middleware
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser()); //allows us to utilize cookies
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}));
 app.set("view engine", "ejs");
+
 
 //global object
 const users = {
-
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "1234",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
 };
-
-//object
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
 //helper function:
 const findUserByEmail = (email) => {
   for (const id in users) {
@@ -52,18 +67,12 @@ app.get("/", (req, res) => {
 //home
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
-  const user = users[userID];
-  const templateVars = {user: user};
+  const user = users[users];
+  const templateVars = {user: user, id: users.id, email: users.email};
 
-  if (!userID) {
+  if (!user) {
     return res.status(401).send("please register");
   }
-
-  //const templateVars = {
-   // urls: urlDatabase,
-  //  email: users.email,
-   // id: users.id
-  //};
 
   res.render("urls_index", templateVars);
 });
@@ -76,7 +85,7 @@ app.get("/urls/new", (req, res) => {
   if (!user) {
     return res.redirect("/login");
   }
-  
+
   res.render("urls_new", templateVars);
 });
 
@@ -133,15 +142,14 @@ app.post("/login", (req, res) => {
   if (user.password !== password) {
     return res.status(400).send('password does not match');
   }
-  res.cookie('user_id', users.id);
   res.redirect('/urls');
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = {
-    user: req.cookies.users
+  let templateVars = {
+    user: users[req.session.user_id],
   };
-  res.render("login", templateVars);
+  res.render("/login", templateVars);
 });
 
 app.post("/register", (req, res) => {
@@ -152,33 +160,29 @@ app.post("/register", (req, res) => {
   }
 
   const user = findUserByEmail(email);
+
   if (user) {
     return res.status(400).send("the user already exists with the specified email address");
   }
 
-  const id = Math.floor(Math.random() * 2000) + 1;
-  users[id] = {
-    id: id,
-    email: email,
+  const userID = generateRandomString();
+
+  users[userID] = {
+    id: userID,
+    email: req.body.email,
     password: password
   };
 
   console.log('users', users);
 
+  // eslint-disable-next-line camelcase
+  req.session.user_id = userID;
   res.redirect('/urls');
 });
 
 app.post("/logout", (req, res) => {
-  //delete req.session['user_id']
-  res.clearCookie('users_id');
-  req.session['users_id'] = null;
-  res.redirect('/urls');
-});
-
-app.post("/urls/:id", (req, res) => {
-  const id = req.params.users_id;
-  const newLongURL = req.body.longURL;
-  urlDatabase[id] = newLongURL;
+  delete req.session.user_id;
+  req.session = null;
   res.redirect('/urls');
 });
 
