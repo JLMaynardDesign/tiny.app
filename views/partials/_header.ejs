@@ -15,20 +15,15 @@
         </form> --> 
 <!--Login form logic-->
         <div class="form-inline" style="margin-left: 500px">
-          <% if(username){ %>
-            <form method="POST" action="/logout">
-              <a class="nav-item nav-link inline">
-                Logged in as <%= username %></a>
+          <% if(users){ %>
+            <form method="POST" action="/login">
+                Logged in as <%= users.email %></a>
                 <button type="submit" class="btn btn-outline-primary">Logout</button>
             </form>
-            <% } else{ %>
+            <% } else { %>
             <div style="margin-left: 100px">
-            <form method="POST" action="/login">
-            <!---  <a class="nav-item nav-link" href="/register">Register</a>
-              <a class="nav-item nav-link" href="/login">Login</a> -->
-              <input type="text" name="username" placeholder="username">
-        <button type="submit" class="btn btn-primary">sign in</button>
-            </form>
+              <button type="submit" class="btn btn-primary"><a href="/login">Login</a></button>
+            <button type="submit" class="btn btn-primary"><a href="/register">Register</a></button>
             </div>
             <% } %>
         </div>
