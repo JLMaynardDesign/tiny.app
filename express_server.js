@@ -1,18 +1,13 @@
 //modules
 const express = require("express");
 const bodyParser = require("body-parser");
-//const morgan = require('morgan');
-//const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080;
 
 //middleware
-//app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
-//app.use(cookieParser()); //allows us to utilize cookies
-
 app.set("view engine", "ejs");
 app.use(cookieSession({
   name: 'session',
@@ -20,7 +15,7 @@ app.use(cookieSession({
 }));
 
 //object
-let urlDatabase = {
+const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.youtube.com",
     userID: "xyz123",
@@ -33,29 +28,21 @@ let urlDatabase = {
 
 //global object
 const users = {
-  userRandomID: {
+  "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "123456",
+    password: "purple-monkey-dinosaur"
   },
-  user2RandomID: {
+  "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "953456",
-  },
+    password: "dishwasher-funk"
+  }
 };
 
 //helper function:
 //getUserByEmail function
-const findUserByEmail = (email, database) => {  
-  for (const property in database) {
-    const user = database[property];
-    if (user.email === email) {
-      return user;
-    }
-  }
-  return null;
-};
+const { findUserByEmail } = require("./helpers");
 
 const generateRandomString = function () {
   return Math.random().toString(36).substring(2, 8);
@@ -127,8 +114,16 @@ app.get("/urls/:shortURL", (req, res) => {
   const userOwnURLs = urlsForUser(userID);
 
   const templateVars = {
-    shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.session.user_id
+    user: user,
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL], 
+    username: req.session.user_id
   };
+
+  if (!userOwnURLs[req.params.shortURL]) {
+  res.status(403).send("either the list does not belogn to you, or you are entering the proper URL");
+  }
+
   res.render("urls_show", templateVars);
 });
 
@@ -161,15 +156,6 @@ app.post("/urls/:shortURL", (req, res) => {
   }
 });
 
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
@@ -183,7 +169,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   } else {
     const deleteURL = req.params.shortURL;
     delete urlDatabase[deleteURL];
-    //console.log(res.body);
     res.redirect("/urls");
   }
 });
@@ -192,7 +177,6 @@ app.get("/login", (req, res) => {
   const templateVars = { user: req.session.user_id };
   const userID = req.session.user_id;
   const user = users[userID];
-  const templateVars = { user };
 
   if (user) {
     res.redirect("/urls");
@@ -223,7 +207,7 @@ app.post("/login", (req, res) => {
 app.get("/register", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
-  const templateVars = { user };
+  const templateVars = { user: req.session.user_id };
 
   if (user) {
     res.redirect("/urls");
