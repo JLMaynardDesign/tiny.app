@@ -18,7 +18,7 @@ app.use(cookieSession({
 app.set("view engine", "ejs");
 
 //object
-const urlDatabase = {
+let urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.youtube.com",
     userID: "bx782a",
@@ -67,20 +67,36 @@ app.get("/", (req, res) => {
 //home
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
-  const user = users[users];
-  const templateVars = {user: user, id: users.id, email: users.email};
+  const user = users[userID];
 
   if (!user) {
     return res.status(401).send("please register");
   }
 
+  const templateVars = {user: user, id: users.id, email: users.email};
   res.render("urls_index", templateVars);
+});
+
+app.post("/urls", (req, res) => {
+  const userID = req.session.user_id;
+  const user = users[users];
+
+  if (!user) {
+    res.redirect("/login");
+  }
+
+  let shortURL = generateRandomString();
+  urlDatabase[shortURL] = {};
+  urlDatabase[shortURL].longURL = req.body.longURL;
+  urlDatabase[shortURL].userID = userID;
+
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/urls/new", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
-  const templateVars = {user: user};
+  const templateVars = { user: user };
 
   if (!user) {
     return res.redirect("/login");
@@ -101,11 +117,6 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-app.post("/urls", (req, res) => {
-  let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);
-});
 
 app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL] = req.body.newLongURL;
@@ -142,7 +153,6 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
   const user = findUserByEmail(req.body.email, users);
-  const email = req.body.email;
   const password = req.body.password;
   const templateVars = { user };
 
@@ -171,13 +181,11 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  if (!email || !password) {
+  if (!req.body.email || !req.body.password) {
     return res.status(400).send("email and password cannot be blank");
   }
 
-  const user = findUserByEmail(email);
+  const user = findUserByEmail(req.body.email, users);
   const templateVars = { user };
 
   if (user) {
@@ -185,6 +193,7 @@ app.post("/register", (req, res) => {
   }
 
   const userID = generateRandomString();
+  const password = req.body.password;
 
   users[userID] = {
     id: userID,
