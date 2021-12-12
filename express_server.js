@@ -86,7 +86,7 @@ app.post("/urls", (req, res) => {
   const user = users[users];
 
   if (!user) {
-    res.status(403).send("please register or log in");
+    res.redirect("/login");
   }
 
   let shortURL = generateRandomString();
@@ -117,7 +117,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     user: user,
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.longURL],
+    longURL: urlDatabase,
     username: req.session.user_id
   };
 
@@ -136,7 +136,7 @@ app.get("/u/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
     return res.status(403).send('URL does not exist');
   } else {
-    const longURL = urlDatabase[req.params.shortURL];
+    const longURL = urlDatabase[req.params.longURL];
     res.redirect(longURL);
   }
 });
@@ -153,7 +153,7 @@ app.post("/urls/:shortURL", (req, res) => {
   } else if (!userOwnURLs) {
     return res.status(403).send("either the list does not belogn to you, or you are entering the proper URL");
   } else {
-    urlDatabase[req.params.shortURL] = req.body.longURL;
+    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
     res.redirect('/urls');
   }
 });
