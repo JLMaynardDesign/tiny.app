@@ -15,9 +15,9 @@
         </form> --> 
 <!--Login form logic-->
         <div class="form-inline" style="margin-left: 500px">
-          <% if(users){ %>
-            <form method="POST" action="/login">
-                Logged in as <%= users.email %></a>
+          <% if(user){ %>
+            <form method="POST" action="/logout">
+                Logged in as <%= user.email %></a>
                 <button type="submit" class="btn btn-outline-primary">Logout</button>
             </form>
             <% } else { %>

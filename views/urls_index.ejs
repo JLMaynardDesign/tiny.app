@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<html>
 
 <head>
   <meta charset="utf-8">
@@ -13,7 +14,6 @@
 
 <body>
   <%- include('partials/_header') %>
-    <header></header>
     <main style="margin: 1em;">
       <h3>My URLs</h3>
       <table class="table">
@@ -32,7 +32,7 @@
                 <%= url %>
               </td>
               <td>
-                <%= urls[url] %>
+                <%= urls[url].longURL %>
               </td>
               <td>
                 <form method="GET" action="/urls/<%= url %>">
