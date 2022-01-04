@@ -18,12 +18,12 @@
           <% if(user){ %>
             <form method="POST" action="/logout">
                 Logged in as <%= user.email %></a>
-                <button type="submit" class="btn btn-outline-primary">Logout</button>
+                <button type="submit" class="btn btn-outline-dark">Logout</button>
             </form>
             <% } else { %>
             <div style="margin-left: 100px">
-              <button type="submit" class="btn btn-primary"><a href="/login">Login</a></button>
-            <button type="submit" class="btn btn-primary"><a href="/register">Register</a></button>
+              <a class="btn btn-outline-warning mx-2" role="button" href="/login">Login</a>
+            <a class="btn btn-outline-warning mx-2" role="button" href="/register" >Register</a>
             </div>
             <% } %>
         </div>
