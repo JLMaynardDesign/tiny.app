@@ -132,12 +132,10 @@ app.get("/u/:shortURL", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
   const templateVars = { user };
-
   if (!urlDatabase[req.params.shortURL]) {
     return res.status(403).send('URL does not exist');
   } else {
-    const longURL = urlDatabase[req.params.longURL];
-    res.redirect(longURL);
+    res.redirect(urlDatabase[req.params.shortURL].longURL);
   }
 });
 
