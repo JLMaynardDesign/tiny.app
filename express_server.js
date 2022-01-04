@@ -44,8 +44,19 @@ const users = {
 //getUserByEmail function
 const { findUserByEmail } = require("./helpers");
 const { generateRandomString } = require("./helpers");
-const { urlsForUser } = require("./helpers");
-
+const urlsForUser = function(id) {
+  let userURLList = {};
+  for (const url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      userURLList[url] = {};
+      userURLList[url] = {
+        userID: urlDatabase[url].userID,
+        longURL: urlDatabase[url].longURL,
+      };
+    }
+  }
+  return userURLList;
+};
 //
 app.get("/", (req, res) => {
   res.redirect("/urls");
@@ -156,6 +167,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     res.redirect("/urls");
   }
 });
+
 //login
 app.get("/login", (req, res) => {
   const templateVars = { user: req.session.user_id };
