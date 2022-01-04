@@ -18,11 +18,11 @@ app.use(cookieSession({
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.youtube.com",
-    userID: "xyz123",
+    userID: "userRandomID",
   },
   i4BoYr: {
     longURL: "https://www.google.ca",
-    userID: "xyz124",
+    userID: "userRandomID",
   },
 };
 
@@ -31,7 +31,7 @@ const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: "123456"
   },
   "user2RandomID": {
     id: "user2RandomID",
@@ -122,7 +122,7 @@ app.get("/urls/:shortURL", (req, res) => {
   };
 
   if (!userOwnURLs[req.params.shortURL]) {
-    res.status(403).send("either the list does not belogn to you, or you are entering the proper URL");
+    res.status(403).send("either the list does not belong to you, or you are entering the proper URL");
   }
 
   res.render("urls_show", templateVars);
