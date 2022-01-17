@@ -11,8 +11,22 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use(cookieSession({
   name: 'session',
-  keys: ['key1', 'key2']
+  keys: ['key1'],
 }));
+
+//global object
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "3456"
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+};
 
 //object
 const urlDatabase = {
@@ -26,25 +40,11 @@ const urlDatabase = {
   },
 };
 
-//global object
-const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "123456"
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  }
-};
-
 //helper function:
 //getUserByEmail function
 const { findUserByEmail } = require("./helpers");
 const { generateRandomString } = require("./helpers");
-const urlsForUser = function(id) {
+const urlsForUser = function (id) {
   let userURLList = {};
   for (const url in urlDatabase) {
     if (urlDatabase[url].userID === id) {
@@ -66,7 +66,7 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
-  const templateVars = { user: user, urls: urlsForUser(userID)};
+  const templateVars = { user: user, urls: urlsForUser(userID) };
 
   if (!user) {
     res.redirect("/login");
@@ -78,10 +78,10 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const userID = req.session.user_id;
-  const user = users[users];
+  const user = users[userID];
 
   if (!user) {
-    res.redirect("/login");
+    return res.redirect("/login");
   }
 
   let shortURL = generateRandomString();
@@ -89,7 +89,7 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL].longURL = req.body.longURL;
   urlDatabase[shortURL].userID = userID;
 
-  res.redirect(`/urls/${shortURL}`);
+  return res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/urls/new", (req, res) => {
@@ -170,9 +170,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 //login
 app.get("/login", (req, res) => {
-  const templateVars = { user: req.session.user_id };
   const userID = req.session.user_id;
   const user = users[userID];
+  const templateVars = { user };
 
   if (user) {
     res.redirect("/urls");
@@ -182,7 +182,7 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const user = findUserByEmail(req.body.email, users);
+  let user = findUserByEmail(req.body.email, users);
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
   const templateVars = { user };
@@ -194,7 +194,7 @@ app.post("/login", (req, res) => {
   } else {
     // eslint-disable-next-line camelcase
     req.session.user_id = user.id;
-    res.redirect('/urls');
+    res.redirect(`/urls/`);
   }
 });
 
@@ -208,7 +208,7 @@ app.get("/register", (req, res) => {
   if (user) {
     res.redirect("/urls");
   }
-  
+
   res.render("register", templateVars);
 });
 
