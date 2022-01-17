@@ -1,6 +1,6 @@
-const findUserByEmail = (email, database) => {
-  for (const property in database) {
-    const user = database[property];
+const findUserByEmail = function (email, database) {
+  for (let profile in database) {
+    const user = database[profile];
     if (user.email === email) {
       console.log(user.email);
       return user;
