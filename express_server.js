@@ -3,12 +3,14 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
-const app = express();
 const PORT = 8080;
+const cookieParser = require('cookie-parser');
 
 //middleware
+const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
+app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['key1'],
@@ -32,18 +34,18 @@ const users = {
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.youtube.com",
-    userID: "userRandomID",
+    userID: "peter23",
   },
   i4BoYr: {
     longURL: "https://www.google.ca",
-    userID: "userRandomID",
+    userID: "peter23",
   },
 };
 
 //helper function:
 //getUserByEmail function
-const { findUserByEmail } = require("./helpers");
-const { generateRandomString } = require("./helpers");
+const  findUserByEmail  = require("./helpers");
+const  generateRandomString  = require("./helpers");
 const urlsForUser = function (id) {
   let userURLList = {};
   for (const url in urlDatabase) {
@@ -168,29 +170,16 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
-//login
-app.get("/login", (req, res) => {
-  const userID = req.session.user_id;
-  const user = users[userID];
-  const templateVars = { user };
-
-  if (user) {
-    res.redirect("/urls");
-  }
-
-  res.render("login", templateVars);
-});
-
 app.post("/login", (req, res) => {
   let user = findUserByEmail(req.body.email, users);
-  const password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  const bodyPassword = req.body.password;
+  const hashedPassword = bcrypt.hashSync(bodyPassword, 10);
   const templateVars = { user };
 
   if (!user) {
-    return res.status(403).send("a user with specified email does not exist", templateVars);
+    return res.status(403).render("login_error", templateVars);
   } else if (user && bcrypt.compareSync(user.password, hashedPassword)) {
-    return res.status(403).send('password does not match', templateVars);
+    return res.status(403).render("login_error", templateVars);
   } else {
     // eslint-disable-next-line camelcase
     req.session.user_id = user.id;
@@ -236,14 +225,27 @@ app.post("/register", (req, res) => {
 
   // eslint-disable-next-line camelcase
   req.session.user_id = userID;
-  res.redirect('/urls');
+  return res.redirect('/urls');
 });
 
 //logout
 app.post("/logout", (req, res) => {
   delete req.session.user_id;
   //req.session = null;
-  res.redirect('/urls');
+  return res.redirect('/urls');
+});
+
+//login
+app.get("/login", (req, res) => {
+  const userID = req.session.user_id;
+  const user = users[userID];
+  const templateVars = { user };
+
+  if (user) {
+    return res.redirect("/urls");
+  }
+
+  return res.render("login", templateVars);
 });
 
 app.listen(PORT, () => {
