@@ -188,9 +188,9 @@ app.post("/login", (req, res) => {
   const templateVars = { user };
 
   if (!user) {
-    return res.status(403).send("a user with specified email does not exist");
+    return res.status(403).send("a user with specified email does not exist", templateVars);
   } else if (user && bcrypt.compareSync(user.password, hashedPassword)) {
-    return res.status(403).send('password does not match');
+    return res.status(403).send('password does not match', templateVars);
   } else {
     // eslint-disable-next-line camelcase
     req.session.user_id = user.id;

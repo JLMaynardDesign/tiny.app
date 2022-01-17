@@ -15,18 +15,20 @@ const testUsers = {
   }
 };
 
-describe('findUserByEmail', function() {
-  it('should return a user with valid email', function() {
+describe('getUserByEmail', function() {
+  it('should return user with a valid email address', function() {
     const user = findUserByEmail("user@example.com", testUsers);
     const expectedUserID = "userRandomID";
-    assert.equal(expectedUserID, user.id);
+
+    assert.equal(user.id, expectedUserID);
   });
 
-  it('should return undefined, if an attempt to pass an email that does not already exist in the user database is committed', function() {
-    const user = findUserByEmail("user@example.com", testUsers);
-    const expectedEmail = undefined;
-    assert.equal(expectedEmail, user.email);
+  it('should return undefined if the email does not exist in the database', function() {
+    const user = findUserByEmail("notInDatabase@example.com", testUsers);
+    const expected = undefined;
+  
+    assert.equal(user, expected);
+    
   });
 });
-
 
