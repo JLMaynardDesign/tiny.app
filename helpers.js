@@ -8,9 +8,9 @@ const findUserByEmail = function (email, database) {
   }
 };
 
-const generateRandomString = function() {
-  return Math.random().toString(36).substring(2, 8);
-};
+//const generateRandomString = function() {
+//return Math.random().toString(36).slice(2, 8);
+//};
 
 
-module.exports = findUserByEmail, generateRandomString;
+module.exports = findUserByEmail;

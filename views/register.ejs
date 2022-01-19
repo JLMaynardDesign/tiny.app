@@ -9,19 +9,21 @@
 </head>
 <body>
   <header>
-    <%- include('partials/_header', {user: user}) %>
+    <!--<%- include('partials/_header', {user: user}) %>-->
+    <%- include('partials/_header'); %>
   </header>
 
     <h1>Register</h1>
     <form method="POST" action="/register"> 
-
+      <div>
       <label>email address</label>
       <input type="email" name="email" placeholder="enter your email address" required>
-
+    </div>
+    <div>
       <label>password</label>
       <input type="password" name="password" placeholder="password" required>
-      <button type="submit" class="btn btn-primary">enter</button>
-      
+      <button type="submit" class="btn btn-primary">Register</button>
+    </div>
     </form>
     
         <!-- Bootstrap JS -->

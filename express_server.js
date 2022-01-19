@@ -13,7 +13,7 @@ app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
-  keys: ['key1'],
+  keys: ['user_id'],
 }));
 
 //global object
@@ -44,8 +44,9 @@ const urlDatabase = {
 
 //helper function:
 //getUserByEmail function
-const  findUserByEmail  = require("./helpers");
-const  generateRandomString  = require("./helpers");
+const findUserByEmail = require("./helpers");
+//const generateRandomString = require("./helpers");
+const { request } = require("express");
 const urlsForUser = function (id) {
   let userURLList = {};
   for (const url in urlDatabase) {
@@ -59,6 +60,11 @@ const urlsForUser = function (id) {
   }
   return userURLList;
 };
+
+const generateRandomString = function() {
+  return Math.random().toString(36).slice(2, 8);
+};
+
 //
 app.get("/", (req, res) => {
   res.redirect("/urls");
@@ -115,7 +121,7 @@ app.get("/urls/:shortURL", (req, res) => {
     user: user,
     shortURL: req.params.shortURL,
     longURL: urlDatabase,
-    username: req.session.user_id
+    //username: req.session.user_id
   };
 
   if (!userOwnURLs[req.params.shortURL]) {
@@ -126,13 +132,19 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  /*if (urlDatabase[req.params.shortURL]) {
+    return res.redirect(urlDatabase[req.params.shortURL]["longURL"]);
+  }
+  res.status(404).send("the short URL here does not correspond to the specified long URL");
+  */
   const userID = req.session.user_id;
   const user = users[userID];
   const templateVars = { user };
+  const redirectURL = urlDatabase[req.params.shortURL].longURL;
   if (!urlDatabase[req.params.shortURL]) {
     return res.status(403).send('URL does not exist');
   } else {
-    res.redirect(urlDatabase[req.params.shortURL].longURL);
+    res.redirect(`http://${redirectURL}`);
   }
 });
 
@@ -149,7 +161,7 @@ app.post("/urls/:shortURL", (req, res) => {
     return res.status(403).send("either the list does not belogn to you, or you are entering the proper URL");
   } else {
     urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-    res.redirect('/urls');
+    res.redirect('/');
   }
 });
 
@@ -166,7 +178,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   } else {
     const deleteURL = req.params.shortURL;
     delete urlDatabase[deleteURL];
-    res.redirect("/urls");
+    res.redirect("/");
   }
 });
 
@@ -183,8 +195,15 @@ app.post("/login", (req, res) => {
   } else {
     // eslint-disable-next-line camelcase
     req.session.user_id = user.id;
-    res.redirect(`/urls/`);
+    res.redirect("/urls/");
   }
+});
+
+//logout
+app.post("/logout", (req, res) => {
+  delete req.session.user_id;
+  //req.session = null;
+  return res.redirect('/urls');
 });
 
 
@@ -192,7 +211,7 @@ app.post("/login", (req, res) => {
 app.get("/register", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
-  const templateVars = { user: req.session.user_id };
+  const templateVars = { user };
 
   if (user) {
     res.redirect("/urls");
@@ -219,19 +238,12 @@ app.post("/register", (req, res) => {
 
   users[userID] = {
     id: userID,
-    email: email,
+    email: req.body.email,
     password: hashedPassword,
   };
 
   // eslint-disable-next-line camelcase
   req.session.user_id = userID;
-  return res.redirect('/urls');
-});
-
-//logout
-app.post("/logout", (req, res) => {
-  delete req.session.user_id;
-  //req.session = null;
   return res.redirect('/urls');
 });
 
@@ -247,6 +259,7 @@ app.get("/login", (req, res) => {
 
   return res.render("login", templateVars);
 });
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

@@ -15,16 +15,15 @@
 </div>
 </div>
         <div class="form-inline" style="margin-left: 500px">
-          <% if(user){ %>
-            <form method="POST" action="/logout">
-                Logged in as <%= user.email %></a>
+          <% if (user) { %>
+            <form method="post" action="/logout">
+               Logged in as: <%= user.email %>
                 <button type="submit" class="btn btn-outline-dark">Logout</button>
             </form>
             <% } else { %>
-            <div style="margin-left: 100px">
-              <a class="btn btn-outline-warning mx-2" role="button" href="/login">Login</a>
-            <a class="btn btn-outline-warning mx-2" role="button" href="/register" >Register</a>
-            </div>
+              <div><p class="card-text"> Not Signed In </p></div>
+              <a class="btn btn-outline-dark" href="/register" role="button">Register</a>
+              <a class="btn btn-outline-dark" href="/login" role="button">Login</a>
             <% } %>
         </div>
   </nav>
