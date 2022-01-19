@@ -144,7 +144,7 @@ app.get("/u/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
     return res.status(403).send('URL does not exist');
   } else {
-    res.redirect(`http://${redirectURL}`);
+    res.redirect(`${redirectURL}`);
   }
 });
 
