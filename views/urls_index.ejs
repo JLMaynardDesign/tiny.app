@@ -33,14 +33,22 @@
               <td>
                <a href="/u/<%= url %>"><%= urls[url].longURL %></a>
               </td>
+              <% if(urls[url].userID === account) { %>
               <td>
                <form method="GET" action="/urls/<%= url %>">
                   <button class="submit" type="btn btn-primary" href="/urls/<%= url %>" role="button">Edit</button>
+                  <% } else{ %>
+                    <p> Do not belong to you </p>
+                    <% } %>
                 </form>
               </td>
               <td>
+                <% if(urls[url].userID === account) { %>
                 <form method="POST" action="/urls/<%= url %>/delete">
                   <button class="submit" type="btn btn-primary">Delete</button>
+                  <% } else{ %>
+                    <p> Do not belong to you </p>
+                    <% } %>
                 </form>
               </td>
             </tr>
@@ -48,6 +56,10 @@
 
         </tbody>
       </table>
+
+      <% if(!user) { %>
+       <p>Error: Please log in first</p>
+       <% } %>
     </main>
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

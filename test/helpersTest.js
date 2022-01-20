@@ -1,21 +1,20 @@
 const { assert } = require('chai');
-
-const { findUserByEmail } = require('../helpers.js');
+const bcrypt = require("bcryptjs");
+const  findUserByEmail  = require('../express_server');
 
 const testUsers = {
-  "userRandomID": {
+  userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
-  "user2RandomID": {
+  user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk", 10)
   }
 };
-
-describe('getUserByEmail', function() {
+describe('findUserByEmail', function() {
   it('should return user with a valid email address', function() {
     const user = findUserByEmail("user@example.com", testUsers);
     const expectedUserID = "userRandomID";

@@ -9,21 +9,25 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-      <!---  <form method="POST" action="/login">
-       
-<!--Login form logic-->
+        
+        <% if (!user) { %>
+          <a class="nav-item nav-link" href="/register">Register</a>
+          <% } %>
+
+        <% if (!user) { %>
+          <a class="nav-item nav-link" href="/login">Login</a>
+          <% } %> 
+
 </div>
 </div>
         <div class="form-inline" style="margin-left: 500px">
           <% if (user) { %>
-            <form method="post" action="/logout">
-               Logged in as: <%= user.email %>
+               <div><p class="card-text"> Logged in as: <%= user.email %> </p></div>
+               <form method="post" action="/logout">
                 <button type="submit" class="btn btn-outline-dark">Logout</button>
             </form>
             <% } else { %>
               <div><p class="card-text"> Not Signed In </p></div>
-              <a class="btn btn-outline-dark" href="/register" role="button">Register</a>
-              <a class="btn btn-outline-dark" href="/login" role="button">Login</a>
             <% } %>
         </div>
   </nav>
