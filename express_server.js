@@ -118,11 +118,9 @@ app.post("/login", (req, res) => {
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
-  const templateVars = { user: loginUserID(req, users), urls: urlsForUser(userID), users: users, account: req.session.user_id, };
-
-  //if (!user) {
-  //return res.render("error_page", templateVars);
-  // }
+  const templateVars = { user: loginUserID(req, users),
+    urls: urlsForUser(userID), users: users,
+    account: req.session.user_id, };
 
   return res.render("urls_index", templateVars);
 });
