@@ -129,11 +129,6 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const userID = req.session.user_id;
-  const user = users[userID];
-
-  //if (!user) {
-  //return res.redirect(`/login`);
-  //}
 
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = {};
